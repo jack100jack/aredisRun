@@ -1,0 +1,53 @@
+1.
+Redis支持各种不同方式的排序。 和Memcache一样，Redis数据都是缓存在计算机内存中，
+不同的是，Memcache只能将数据缓存到内存中，无法自动定期写入硬盘，这就表示，一断电或重启，内存清空，数据丢失。
+所以Memcache的应用场景适用于缓存无需持久化的数据。
+而Redis不同的是它会周期性的把更新的数据写入磁盘或者把修改操作写入追加的记录文件，实现数据的持久化。
+2.
+https://redis.io/download
+$ wget http://download.redis.io/releases/redis-5.0.2.tar.gz
+$ tar xzf redis-5.0.2.tar.gz
+$ cd redis-5.0.2
+$ make
+The binaries that are now compiled are available in the src directory. Run Redis with:
+
+$ src/redis-server src/6379.conf
+You can interact with Redis using the built-in client:
+
+$ src/redis-cli
+redis> set foo bar
+OK
+redis> get foo
+"bar"
+
+注意，两台机器的IP地址要在同一网段内，否则无法实现集群。
+两台机器上均按照以上步骤安装并配置好redis服务。在Slave机器上修改配置文件，使其成为Master的从机。命令及配置如下：
+#vi /usr/local/webserver/redis/conf/redis.conf
+slaveof  192.168.32.166  6379
+src/redis-server 6379.conf
+src/redis-server 6380.conf
+src/redis-cli -h 127.0.0.1 -p 6379
+src/redis-cli -h 127.0.0.1 -p 6380
+
+sentinel monitor host6379 127.0.0.1 6379 1
+启动sentinel： ./redis-sentinel ../sentinel.conf
+
+./runtest-sentinel sentinel.conf
+
+src/redis-server 6381.conf slaveof 127.0.0.1 6379
+
+src/redis-server 6382.conf slaveof 127.0.0.1 6379
+
+src/redis-cli -h 127.0.0.1 -p 6381
+src/redis-cli -h 127.0.0.1 -p 6382
+
+wget http://downloads.sourceforge.net/tcl/tcl8.6.1-src.tar.gz           //直接下载 
+sudo tar xzvf tcl8.6.1-src.tar.gz  -C /usr/local/  
+cd  /usr/local/tcl8.6.1/unix/  
+sudo ./configure  
+sudo make  
+sudo make install   
+
+src/redis-server redis.conf
+src/redis-sentinel sentinel.conf
+
